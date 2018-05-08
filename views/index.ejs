@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Test</title>
+    <title>Neutral Search</title>
     <link rel="stylesheet" type="text/css" href="/css/style.css">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
   </head>
@@ -12,17 +12,18 @@
         <form action="/" method="post">
           <input name="search" type="text" class="ghost-input" placeholder="Enter your search term here" required>
           <input type="submit" class="ghost-button" value="Submit">
+          <!-- <div class="onoffswitch">
+            <input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="myonoffswitch" checked>
+            <label class="onoffswitch-label" for="myonoffswitch">
+                <span class="onoffswitch-inner"></span>
+                <span class="onoffswitch-switch"></span>
+            </label> -->
+          </div>
         </form>
-        
-        <% if(weather !== null){ %>
-          <p class="message"><%= weather %></p>
-        <% } %>
-        <% if(error !== null){ %>
-          <p class="message"><%= city %></p>
-        <% } %>
+        <p class="message">version 0.1</p>
       </fieldset>
 
-      <% if(weather == null){ %>
+      <% if(data != null){ %>
         <% for(var i = 0; i < data.length; i++) { %>
           <div class="result_entry">
             <a href=<%= data[i].link %> target="_blank"><%= data[i].name %></a>

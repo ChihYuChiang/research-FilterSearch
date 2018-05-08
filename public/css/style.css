@@ -1,8 +1,8 @@
+/* Base */
 /*
   Styles from this codepen:
   https://codepen.io/official_naveen/pen/rgknI
 */
-
 body {
     width: 800px;
     margin: 0 auto;
@@ -71,12 +71,66 @@ fieldset {
 .ghost-button:hover {
   border:2px solid #515151;
 }
-.message {
-  color: #E64A19;
+
+
+/* Toggle switch */
+.onoffswitch {
+  position: relative; width: 50px;
+  -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
 }
-.result_entry {
-  padding: 10px 0px;
+
+.onoffswitch-checkbox {
+  display: none;
 }
+
+.onoffswitch-label {
+  display: block; overflow: hidden; cursor: pointer;
+  border: 2px solid #FFFFFF; border-radius: 50px;
+}
+
+.onoffswitch-inner {
+  display: block; width: 200%; margin-left: -100%;
+  transition: margin 0.3s ease-in 0s;
+}
+
+.onoffswitch-inner:before, .onoffswitch-inner:after {
+  display: block; float: left; width: 50%; height: 17px; padding: 0; line-height: 17px;
+  font-size: 25px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
+  box-sizing: border-box;
+}
+
+.onoffswitch-inner:before {
+  content: "";
+  padding-left: 14px;
+  background-color: #34A7C1; color: #34A7C1;
+}
+
+.onoffswitch-inner:after {
+  content: "";
+  padding-right: 14px;
+  background-color: #EEEEEE; color: #999999;
+  text-align: right;
+}
+
+.onoffswitch-switch {
+  display: block; width: 25px; margin: -4px;
+  background: #FFFFFF;
+  position: absolute; top: 0; bottom: 0;
+  right: 29px;
+  border: 2px solid #FFFFFF; border-radius: 50px;
+  transition: all 0.3s ease-in 0s; 
+}
+
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
+  margin-left: 0;
+}
+
+.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
+  right: 0px; 
+}
+
+
+/* Customized */
 p {
   font-size: 15px;
   color: #4b545f;
@@ -84,4 +138,10 @@ p {
 a {
   font-size: 18px;
   font-weight: 700;
+}
+.message {
+  color: #E64A19;
+}
+.result_entry {
+  padding: 10px 0px;
 }

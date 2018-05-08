@@ -10,9 +10,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', function (req, res) {
   res.render('index', {
-    weather: 'version 0.1',
-    error: 'Error, please try again',
-    city: null
+    error: null,
+    searchTerms: null,
+    data: null
   });
 });
 
@@ -30,9 +30,8 @@ app.post('/', function (req, res) {
     console.log(dataStream);
 
     res.render('index', {
-      weather: null,
-      error: 'Error, please try again',
-      city: 'version 0.1',
+      error: null,
+      searchTerms: 'search_term',
       data: obj
     });
   });

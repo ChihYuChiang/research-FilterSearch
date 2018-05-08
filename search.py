@@ -9,7 +9,7 @@ from python_modules import google
 
 
 #--Function for acquiring lemmas in WordNet structure
-def getAntonyms(words):
+def getAntonyms(word):
     
     antonyms = []
     syns = wn.synsets(word)
