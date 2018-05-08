@@ -10,7 +10,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get('/', function (req, res) {
   res.render('index', {
-    weather: 'test',
+    weather: 'version 0.1',
     error: 'Error, please try again',
     city: null
   });
@@ -26,16 +26,14 @@ app.post('/', function (req, res) {
     dataStream += data.toString();
   });
   search.stdout.on('end', () => {
-    let obj = JSON.parse(dataStream);
+    let obj = JSON.parse(dataStream).slice(0, 10);
     console.log(dataStream);
 
     res.render('index', {
       weather: null,
       error: 'Error, please try again',
-      city: 'taipei',
-      name: obj[0].name,
-      link: obj[0].link,
-      description: obj[0].description
+      city: 'version 0.1',
+      data: obj
     });
   });
 });

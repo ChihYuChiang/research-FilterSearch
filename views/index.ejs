@@ -15,19 +15,21 @@
         </form>
         
         <% if(weather !== null){ %>
-            <p class="message"><%= weather %></p>
+          <p class="message"><%= weather %></p>
         <% } %>
         <% if(error !== null){ %>
-            <p class="message"><%= city %></p>
+          <p class="message"><%= city %></p>
         <% } %>
       </fieldset>
 
       <% if(weather == null){ %>
-      <div>
-        <a href=<%= link %> target="_blank"><%= name %></a>
-        <p><%= link %></p>
-        <p><%= description %></p>
-      </div>
+        <% for(var i = 0; i < data.length; i++) { %>
+          <div class="result_entry">
+            <a href=<%= data[i].link %> target="_blank"><%= data[i].name %></a>
+            <p><%= data[i].link %></p>
+            <p><%= data[i].description %></p>
+          </div>
+        <% } %>
       <% } %>
     </div>
   </body>

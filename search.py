@@ -8,7 +8,7 @@ def main():
     keyword = sys.argv[1]
     session = sys.argv[2]
 
-    results = google.search(keyword, pages=1)
+    results = google.search(keyword, pages=2)
 
     '''
     GoogleResult:

@@ -74,6 +74,9 @@ fieldset {
 .message {
   color: #E64A19;
 }
+.result_entry {
+  padding: 10px 0px;
+}
 p {
   font-size: 15px;
   color: #4b545f;
