@@ -3,6 +3,24 @@ const app = express();
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const child_process = require('child_process');
+const {google} = require('googleapis');
+const customsearch = google.customsearch('v1');
+const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'))
+
+//https://console.developers.google.com/apis/credentials
+//https://developers.google.com/custom-search/json-api/v1/overview
+
+async function search(searchTerm) {
+  console.log();
+  const res = await customsearch.cse.list({
+    cx: config.CUSTOM_ENGINE_ID,
+    auth: config.API_KEY,
+    q: searchTerm
+  });
+  console.log(res.data);
+  return res.data;
+}
+search('good to health')
 
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
