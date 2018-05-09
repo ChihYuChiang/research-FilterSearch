@@ -1,11 +1,8 @@
-import json
-import os
 import sys
 import random
 from collections import Counter
 import nltk
 from nltk.corpus import wordnet as wn
-from python_modules import google
 
 
 #--Function for acquiring lemmas in WordNet structure
@@ -31,10 +28,7 @@ def getAntonyms(word):
 #'real news'
 
 
-def main():
-
-    searchTerm = sys.argv[1]
-    session = sys.argv[2]
+def getReverseTerms(searchTerm):
 
     searchTerm_token = nltk.word_tokenize(searchTerm)
     searchTerm_reverse_token = []
@@ -48,30 +42,15 @@ def main():
 
     searchTerm_reverse = ' '.join(searchTerm_reverse_token)
 
-    results = google.search(searchTerm, pages=1)[0:5] + google.search(searchTerm_reverse, pages=1)[0:5]
+    return(searchTerm_reverse)
 
-    '''
-    GoogleResult:
-        self.name #The title of the link
-        self.link #The external link
-        self.google_link #The google link
-        self.description #The description of the link
-        self.cached #A link to the cached version of the page
-        self.page #What page this result was on (When searching more than one page)
-        self.index #What index on this page it was on
-        self.number_of_results #The total number of results the query returned
-    '''
 
-    results_dic = [{
-        'name': result.name,
-        'link': result.link,
-        'description': result.description,
-        'index': result.index
-    } for result in results]
+def main():
 
-    results_json = json.dumps(results_dic)
+    searchTerm = sys.argv[1]
+    searchTerm_reverse = getReverseTerms(searchTerm)
 
-    print(results_json)
+    print(searchTerm_reverse)
 
 
 #--Start process
