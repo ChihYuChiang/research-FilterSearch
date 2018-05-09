@@ -31,7 +31,7 @@ app.post('/', function (req, res) {
 
     res.render('index', {
       error: null,
-      searchTerms: 'search_term',
+      searchTerms: search_term,
       data: obj
     });
   });

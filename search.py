@@ -48,7 +48,7 @@ def main():
 
     searchTerm_reverse = ' '.join(searchTerm_reverse_token)
 
-    results = google.search(searchTerm, pages=1)[0:4] + google.search(searchTerm_reverse, pages=1)[0:4]
+    results = google.search(searchTerm, pages=1)[0:5] + google.search(searchTerm_reverse, pages=1)[0:5]
 
     '''
     GoogleResult:
