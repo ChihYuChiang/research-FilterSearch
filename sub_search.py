@@ -14,7 +14,7 @@ def main():
     searchTerm = sys.argv[1]
     searchTerm_reverse = getReverseTerms(searchTerm)
 
-    results = google.search(searchTerm, pages=1)[0:5] + google.search(searchTerm_reverse, pages=1)[0:5]
+    results = google.search(searchTerm, pages=1)[0:5] + google.search(searchTerm_reverse, pages=1)[0:5] if searchTerm != searchTerm_reverse else google.search(searchTerm, pages=2)[0:10]
 
     '''
     GoogleResult:

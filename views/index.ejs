@@ -23,7 +23,10 @@
       </fieldset>
 
       <% if(data != null){ %>
-        <p class="message">Search term: <b><%= searchTerms %></b></p>
+        <p class="message">
+          Original search term: <b><%= searchTerms[0] %></b><br />
+          Reverse search term: <b><%= searchTerms[1] %></b>
+        </p>        
         <% for(var i = 0; i < data.length; i++) { %>
           <div class="result_entry">
             <a href=<%= data[i].link %> target="_blank"><%= data[i].name %></a>
