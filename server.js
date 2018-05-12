@@ -34,16 +34,15 @@ const customsearch = google.customsearch('v1');
 Function
 ------------------------------------------------------------
 */
-// async function search_api(searchTerm) {
-//   const res = await customsearch.cse.list({
-//     cx: config.CUSTOM_ENGINE_ID,
-//     auth: config.API_KEY,
-//     q: searchTerm
-//   });
-//   console.log(res.data);
-//   return res.data;
-// }
-// search_api('good to health')
+async function search_api(searchTerm) {
+  const res = await customsearch.cse.list({
+    cx: config.CUSTOM_ENGINE_ID,
+    auth: config.API_KEY,
+    q: searchTerm
+  });
+  console.log(res.data);
+  return res.data;
+}
 
 function search_scrape(searchTerm, res, rend) {
   let search = child_process.spawn('python', ['sub_search.py', searchTerm]);
@@ -69,17 +68,24 @@ function rend(res, searchResult) {
 }
 
 function termProcessing(searchTerm) {
-  let processing = child_process.spawn('python', ['sub_termProcessing.py', searchTerm]);
+  return new Promise((resolve, reject) => {
+    let processing = child_process.spawn('python', ['sub_termProcessing.py', searchTerm]);
 
-  let dataStream = '';
-  processing.stdout.on('data', (data) => {
-    dataStream += data.toString();
-  });
-  processing.stdout.on('end', () => {
-    const processingResult = dataStream;
-    console.log(processingResult);
+    let dataStream = '';
+    processing.stdout.on('data', (data) => {
+      dataStream += data.toString();
+    });
+    processing.stdout.on('end', () => {
+      console.log(dataStream);
+
+      resolve(dataStream);
+    });
   });
 }
+
+test = termProcessing('beautiful');
+test.then((dataStream) => { search_api(dataStream); })
+search_api('beautiful');
 
 
 
