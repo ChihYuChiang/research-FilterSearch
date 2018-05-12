@@ -3,8 +3,6 @@ import os
 import sys
 import random
 from collections import Counter
-import nltk
-from nltk.corpus import wordnet as wn
 from python_modules import google
 from sub_termProcessing import getReverseTerms
 
