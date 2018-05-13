@@ -11,7 +11,7 @@ const child_process = require('child_process');
 
 //--Config
 const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
-process.argv[2];
+const SEARCH_MODE = process.argv[2];
 
 
 //--Server
@@ -34,16 +34,23 @@ const customsearch = google.customsearch('v1');
 //--Logger
 //https://github.com/winstonjs/winston
 const { createLogger, format, transports } = require('winston');
+
+//Filter the connection produced by dns rerouting
+const filter_favicon = format((info, opts) => {
+  if (info.sourcePath == '/favicon.ico') { return false; }
+  return info;
+});
 const logger = createLogger({
   format: format.combine(
     format.timestamp(),
-    format.json()
+    format.json(),
+    filter_favicon()
   ),
   transports: [
     new transports.File({ filename: './log/app.log' }),
     new transports.Console({ format: format.simple()})
   ]
-})
+});
 
 
 
@@ -53,6 +60,27 @@ const logger = createLogger({
 Function
 ------------------------------------------------------------
 */
+function rend(res, searchResult) {
+  res.render('index', {
+    error: null,
+    searchTerms: searchResult ? searchResult['searchTerms'] : null,
+    data: searchResult ? searchResult['items'] : null
+  });
+}
+
+function search(searchTerms, implement, res, rend) {
+  Promise
+  .all([implement(searchTerms[0]), implement(searchTerms[1])])
+  .then((result) => {
+    let searchResult = {};
+    searchResult.searchTerms = searchTerms;
+    searchResult.items = result[0].items.slice(0, 5).concat(result[1].items.slice(0, 5));
+    console.log(searchResult);
+    
+    rend(res, searchResult);
+  });
+}
+
 async function search_api(searchTerm) {
   const res = await customsearch.cse.list({
     cx: config.CUSTOM_ENGINE_ID,
@@ -63,39 +91,17 @@ async function search_api(searchTerm) {
   return res.data;
 }
 
-function search(searchTerms, res, rend) {
-  Promise
-  .all([search_api(searchTerms[0]), search_api(searchTerms[1])])
-  .then((result) => {
-    let searchResult = {};
-    searchResult.searchTerms = searchTerms;
-    searchResult.items = result[0].items.slice(0, 5).concat(result[1].items.slice(0, 5));
-    console.log(searchResult);
+function search_scrape(searchTerm) {
+  return new Promise((resolve, reject) => {
+    let search = child_process.spawn('python', ['sub_search.py', searchTerm]);
 
-    rend(res, searchResult);
-  });
-}
-
-function search_scrape(searchTerm, res, rend) {
-  let search = child_process.spawn('python', ['sub_search.py', searchTerm]);
-
-  let dataStream = '';
-  search.stdout.on('data', (data) => {
-    dataStream += data.toString();
-  });
-  search.stdout.on('end', () => {
-    const searchResult = JSON.parse(dataStream);
-    console.log(searchResult);
-
-    rend(res, searchResult);
-  });
-}
-
-function rend(res, searchResult) {
-  res.render('index', {
-    error: null,
-    searchTerms: searchResult ? searchResult['searchTerms'] : null,
-    data: searchResult ? searchResult['items'] : null
+    let dataStream = '';
+    search.stdout.on('data', (data) => {
+      dataStream += data.toString();
+    });
+    search.stdout.on('end', () => {
+      resolve(JSON.parse(dataStream));
+    });
   });
 }
 
@@ -136,15 +142,14 @@ app.post(['/', /\/.+/], function (req, res) {
   var searchTerm = req.body.search;
   var searchTerm_reverse = '';
   var searchTerms = [];
-  // search_scrape(searchTerm, res, rend);
 
   var processing = termProcessing(searchTerm);
   processing.then((result) => {
     searchTerm_reverse = result;
     searchTerms = [searchTerm, searchTerm_reverse];
 
-    search(searchTerms, res, rend);
-  })
+    search(searchTerms, search_scrape, res, rend);
+  });
 });
 
 app.listen(3000, function () {

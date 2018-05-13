@@ -10,9 +10,7 @@ from sub_termProcessing import getReverseTerms
 def main():
 
     searchTerm = sys.argv[1]
-    searchTerm_reverse = getReverseTerms(searchTerm)
-
-    results = google.search(searchTerm, pages=1)[0:5] + google.search(searchTerm_reverse, pages=1)[0:5] if searchTerm != searchTerm_reverse else google.search(searchTerm, pages=2)[0:10]
+    results = google.search(searchTerm, pages=1)
 
     '''
     GoogleResult:
@@ -27,7 +25,6 @@ def main():
     '''
 
     results_dic = {
-        'searchTerms': [searchTerm, searchTerm_reverse],
         'items': [{
             'title': result.name,
             'link': result.link,
@@ -37,7 +34,6 @@ def main():
     }
 
     results_json = json.dumps(results_dic)
-
     print(results_json)
 
 
