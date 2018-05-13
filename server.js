@@ -3,15 +3,18 @@
 Set-up
 ------------------------------------------------------------
 */
-//Base
+
+//--Base
 const fs = require('fs');
 const child_process = require('child_process');
 
-//Config
+
+//--Config
 const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 process.argv[2];
 
-//Server
+
+//--Server
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
@@ -19,12 +22,28 @@ app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//Google search official api
+
+//--Google search official api
 //https://console.developers.google.com/apis/credentials
 //https://developers.google.com/custom-search/json-api/v1/overview
 //https://developers.google.com/custom-search/json-api/v1/reference/cse/list#request
-const {google} = require('googleapis');
+const { google } = require('googleapis');
 const customsearch = google.customsearch('v1');
+
+
+//--Logger
+//https://github.com/winstonjs/winston
+const { createLogger, format, transports } = require('winston');
+const logger = createLogger({
+  format: format.combine(
+    format.timestamp(),
+    format.json()
+  ),
+  transports: [
+    new transports.File({ filename: './log/app.log' }),
+    new transports.Console({ format: format.simple()})
+  ]
+})
 
 
 
@@ -103,6 +122,13 @@ Server Operation
 ------------------------------------------------------------
 */
 app.get(['/', /\/.+/], function (req, res) {
+  logger.log({
+    level: 'info',
+    message: 'Client connected.',
+    sourceIp: req.ip,
+    sourcePath: req.path
+  });
+
   rend(res, null);
 });
 
@@ -122,5 +148,5 @@ app.post(['/', /\/.+/], function (req, res) {
 });
 
 app.listen(3000, function () {
-  console.log('Server listening on port 3000..');
+  logger.info('Server listening on port 3000..');
 });
