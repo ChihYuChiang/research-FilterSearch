@@ -40,8 +40,21 @@ async function search_api(searchTerm) {
     auth: config.API_KEY,
     q: searchTerm
   });
-  console.log(res.data);
+
   return res.data;
+}
+
+function search(searchTerms, res, rend) {
+  Promise
+  .all([search_api(searchTerms[0]), search_api(searchTerms[1])])
+  .then((result) => {
+    let searchResult = {};
+    searchResult.searchTerms = searchTerms;
+    searchResult.items = result[0].items.slice(0, 5).concat(result[1].items.slice(0, 5));
+    console.log(searchResult);
+
+    rend(res, searchResult);
+  });
 }
 
 function search_scrape(searchTerm, res, rend) {
@@ -63,7 +76,7 @@ function rend(res, searchResult) {
   res.render('index', {
     error: null,
     searchTerms: searchResult ? searchResult['searchTerms'] : null,
-    data: searchResult ? searchResult['items'].slice(0, 10) : null
+    data: searchResult ? searchResult['items'] : null
   });
 }
 
@@ -76,16 +89,10 @@ function termProcessing(searchTerm) {
       dataStream += data.toString();
     });
     processing.stdout.on('end', () => {
-      console.log(dataStream);
-
       resolve(dataStream);
     });
   });
 }
-
-test = termProcessing('beautiful');
-test.then((dataStream) => { search_api(dataStream); })
-search_api('beautiful');
 
 
 
@@ -101,7 +108,17 @@ app.get('/', function (req, res) {
 
 app.post('/', function (req, res) {
   var searchTerm = req.body.search;
-  search_scrape(searchTerm, res, rend);
+  var searchTerm_reverse = '';
+  var searchTerms = [];
+  // search_scrape(searchTerm, res, rend);
+
+  var processing = termProcessing(searchTerm);
+  processing.then((result) => {
+    searchTerm_reverse = result;
+    searchTerms = [searchTerm, searchTerm_reverse];
+
+    search(searchTerms, res, rend);
+  })
 });
 
 app.listen(3000, function () {

@@ -29,9 +29,9 @@
         </p>        
         <% for(var i = 0; i < data.length; i++) { %>
           <div class="result_entry">
-            <a href=<%= data[i].link %> target="_blank"><%= data[i].name %></a>
+            <a href=<%= data[i].link %> target="_blank"><%= data[i].title %></a>
             <p><%= data[i].link %></p>
-            <p><%= data[i].description %></p>
+            <p><%= data[i].snippet %></p>
           </div>
         <% } %>
       <% } %>

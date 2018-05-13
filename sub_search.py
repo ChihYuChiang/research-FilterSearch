@@ -29,9 +29,9 @@ def main():
     results_dic = {
         'searchTerms': [searchTerm, searchTerm_reverse],
         'items': [{
-            'name': result.name,
+            'title': result.name,
             'link': result.link,
-            'description': result.description,
+            'snippet': result.description,
             'index': result.index
         } for result in results]
     }
