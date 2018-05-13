@@ -11,7 +11,7 @@ const child_process = require('child_process');
 
 //--Config
 const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
-const SEARCH_MODE = process.argv[2];
+const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
 
 
 //--Server
@@ -63,8 +63,8 @@ Function
 function rend(res, searchResult) {
   res.render('index', {
     error: null,
-    searchTerms: searchResult ? searchResult['searchTerms'] : null,
-    data: searchResult ? searchResult['items'] : null
+    searchTerms: searchResult['searchTerms'] ? searchResult['searchTerms'] : null,
+    data: searchResult['items'] ? searchResult['items'] : null
   });
 }
 
@@ -127,7 +127,7 @@ function termProcessing(searchTerm) {
 Server Operation
 ------------------------------------------------------------
 */
-app.get(['/', /\/.+/], function (req, res) {
+app.get(['/', /\/.+/], (req, res) => {
   logger.log({
     level: 'info',
     message: 'Client connected.',
@@ -135,10 +135,10 @@ app.get(['/', /\/.+/], function (req, res) {
     sourcePath: req.path
   });
 
-  rend(res, null);
+  rend(res, { searchTerms: null, searchResult: null });
 });
 
-app.post(['/', /\/.+/], function (req, res) {
+app.post(['/', /\/.+/], (req, res) => {
   var searchTerm = req.body.search;
   var searchTerm_reverse = '';
   var searchTerms = [];
@@ -148,10 +148,16 @@ app.post(['/', /\/.+/], function (req, res) {
     searchTerm_reverse = result;
     searchTerms = [searchTerm, searchTerm_reverse];
 
-    search(searchTerms, search_scrape, res, rend);
+    //SEARCH_MODE == 'term' perform only term reverse and no Google search
+    //SEARCH_MODE == 'scrape' or 'api' perform corresponding Google search implementation
+    if(SEARCH_MODE == 'term') {
+      rend(res, { searchTerms: searchTerms, searchResult: null });
+    } else {
+      search(searchTerms, SEARCH_MODE == 'scrape' ? search_scrape : search_api, res, rend);
+    }
   });
 });
 
-app.listen(3000, function () {
+app.listen(3000, () => {
   logger.info('Server listening on port 3000..');
 });
