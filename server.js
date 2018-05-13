@@ -102,11 +102,11 @@ function termProcessing(searchTerm) {
 Server Operation
 ------------------------------------------------------------
 */
-app.get('/', function (req, res) {
+app.get(['/', /\/.+/], function (req, res) {
   rend(res, null);
 });
 
-app.post('/', function (req, res) {
+app.post(['/', /\/.+/], function (req, res) {
   var searchTerm = req.body.search;
   var searchTerm_reverse = '';
   var searchTerms = [];
