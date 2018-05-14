@@ -88,6 +88,12 @@ async function search_api(searchTerm) {
     q: searchTerm
   });
 
+  logger.log({
+    level: 'info',
+    message: 'Perform api search successfully.',
+    searchTerm: searchTerm
+  });
+
   return res.data;
 }
 
@@ -100,6 +106,12 @@ function search_scrape(searchTerm) {
       dataStream += data.toString();
     });
     search.stdout.on('end', () => {
+      logger.log({
+        level: 'info',
+        message: 'Perform scrape search successfully.',
+        searchTerm: searchTerm
+      });
+
       resolve(JSON.parse(dataStream));
     });
   });
@@ -114,6 +126,13 @@ function termProcessing(searchTerm) {
       dataStream += data.toString();
     });
     processing.stdout.on('end', () => {
+      logger.log({
+        level: 'info',
+        message: 'Perform term processing successfully.',
+        searchTerm: searchTerm,
+        searchTerm_reverse: dataStream
+      });
+
       resolve(dataStream);
     });
   });
