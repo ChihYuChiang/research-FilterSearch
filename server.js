@@ -12,6 +12,7 @@ const child_process = require('child_process');
 //--Config
 const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
+const PORT_LISTENED = SEARCH_MODE == 'term' ? 3001 : 3000;
 
 
 //--Server
@@ -138,6 +139,13 @@ function termProcessing(searchTerm) {
   });
 }
 
+function sprintf(format) {
+  for(var i = 1; i < arguments.length; i++) {
+    format = format.replace( /%s/, arguments[i] );
+  }
+  return format;
+}
+
 
 
 
@@ -177,6 +185,6 @@ app.post(['/', /\/.+/], (req, res) => {
   });
 });
 
-app.listen(3000, () => {
-  logger.info('Server listening on port 3000..');
+app.listen(PORT_LISTENED, () => {
+  logger.info(sprintf('Server listening on port %s..', PORT_LISTENED));
 });
