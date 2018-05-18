@@ -63,3 +63,4 @@ typings/
 # Customized
 python_modules/
 *.json
+data/
