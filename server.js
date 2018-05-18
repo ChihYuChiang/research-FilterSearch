@@ -61,28 +61,29 @@ const logger = createLogger({
 Function
 ------------------------------------------------------------
 */
-function rend(res, searchResult) {
+function rend(res, sourcePath, searchResult) {
   res.render('index', {
     error: null,
+    sourcePath: sourcePath,
     searchTerms: searchResult['searchTerms'] ? searchResult['searchTerms'] : null,
     data: searchResult['items'] ? searchResult['items'] : null
   });
 }
 
-function search(searchTerms, implement, res, rend) {
+function search(searchTerms, implement, res, sourcePath) {
   Promise
-  .all([implement(searchTerms[0]), implement(searchTerms[1])])
+  .all([implement(searchTerms[0], sourcePath), implement(searchTerms[1], sourcePath)])
   .then((result) => {
     let searchResult = {};
     searchResult.searchTerms = searchTerms;
     searchResult.items = result[0].items.slice(0, 5).concat(result[1].items.slice(0, 5));
     console.log(searchResult);
     
-    rend(res, searchResult);
+    rend(res, sourcePath, searchResult);
   });
 }
 
-async function search_api(searchTerm) {
+async function search_api(searchTerm, sourcePath) {
   const res = await customsearch.cse.list({
     cx: config.CUSTOM_ENGINE_ID,
     auth: config.API_KEY,
@@ -92,13 +93,14 @@ async function search_api(searchTerm) {
   logger.log({
     level: 'info',
     message: 'Perform api search successfully.',
-    searchTerm: searchTerm
+    searchTerm: searchTerm,
+    sourcePath: sourcePath
   });
 
   return res.data;
 }
 
-function search_scrape(searchTerm) {
+function search_scrape(searchTerm, sourcePath) {
   return new Promise((resolve, reject) => {
     let search = child_process.spawn('python', ['sub_search.py', searchTerm]);
 
@@ -110,7 +112,8 @@ function search_scrape(searchTerm) {
       logger.log({
         level: 'info',
         message: 'Perform scrape search successfully.',
-        searchTerm: searchTerm
+        searchTerm: searchTerm,
+        sourcePath: sourcePath
       });
 
       resolve(JSON.parse(dataStream));
@@ -118,7 +121,7 @@ function search_scrape(searchTerm) {
   });
 }
 
-function termProcessing(searchTerm) {
+function termProcessing(searchTerm, sourcePath) {
   return new Promise((resolve, reject) => {
     let processing = child_process.spawn('python', ['sub_termProcessing.py', searchTerm]);
 
@@ -131,7 +134,8 @@ function termProcessing(searchTerm) {
         level: 'info',
         message: 'Perform term processing successfully.',
         searchTerm: searchTerm,
-        searchTerm_reverse: dataStream
+        searchTerm_reverse: dataStream,
+        sourcePath: sourcePath
       });
 
       resolve(dataStream);
@@ -141,7 +145,7 @@ function termProcessing(searchTerm) {
 
 function sprintf(format) {
   for(var i = 1; i < arguments.length; i++) {
-    format = format.replace( /%s/, arguments[i] );
+    format = format.replace(/%s/, arguments[i]);
   }
   return format;
 }
@@ -162,7 +166,7 @@ app.get(['/', /\/.+/], (req, res) => {
     sourcePath: req.path
   });
 
-  rend(res, { searchTerms: null, searchResult: null });
+  rend(res, req.path, { searchTerms: null, searchResult: null });
 });
 
 app.post(['/', /\/.+/], (req, res) => {
@@ -170,7 +174,7 @@ app.post(['/', /\/.+/], (req, res) => {
   var searchTerm_reverse = '';
   var searchTerms = [];
 
-  var processing = termProcessing(searchTerm);
+  var processing = termProcessing(searchTerm, req.path);
   processing.then((result) => {
     searchTerm_reverse = result;
     searchTerms = [searchTerm, searchTerm_reverse];
@@ -178,9 +182,9 @@ app.post(['/', /\/.+/], (req, res) => {
     //SEARCH_MODE == 'term' perform only term reverse and no Google search
     //SEARCH_MODE == 'scrape' or 'api' perform corresponding Google search implementation
     if(SEARCH_MODE == 'term') {
-      rend(res, { searchTerms: searchTerms, searchResult: null });
+      rend(res, req.path, { searchTerms: searchTerms, searchResult: null });
     } else {
-      search(searchTerms, SEARCH_MODE == 'scrape' ? search_scrape : search_api, res, rend);
+      search(searchTerms, SEARCH_MODE == 'scrape' ? search_scrape : search_api, res, req.path);
     }
   });
 });

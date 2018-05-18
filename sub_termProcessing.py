@@ -5,7 +5,7 @@ import nltk
 from nltk.corpus import wordnet as wn
 
 
-#--Function for acquiring lemmas in WordNet structure
+#--Acquire lemmas and antonyms of one word in WordNet structure
 def getAntonyms(word):
     
     antonyms = []
@@ -20,14 +20,9 @@ def getAntonyms(word):
     return antonyms_common
 
 [getAntonyms(w) for w in nltk.word_tokenize('fake news')]
-#'best restaurant in chicago'
-#'I love Marry'
-#'Caffeine is good to health'
-#'democratic'
-#'fake news'
-#'real news'
 
 
+#--Acquire the reverse terms based on the antonyms of each word
 def getReverseTerms(searchTerm):
 
     searchTerm_token = nltk.word_tokenize(searchTerm)
@@ -45,6 +40,8 @@ def getReverseTerms(searchTerm):
     return(searchTerm_reverse)
 
 
+#--Main process
+#Print in stdout to pass to parent program
 def main():
 
     searchTerm = sys.argv[1]
@@ -52,6 +49,4 @@ def main():
 
     print(searchTerm_reverse)
 
-
-#--Start process
 if __name__ == '__main__': main()
