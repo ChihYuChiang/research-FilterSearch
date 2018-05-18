@@ -1,5 +1,6 @@
 import sys
 import random
+import numpy as np
 from collections import Counter
 import nltk
 from nltk.corpus import wordnet as wn
@@ -19,12 +20,14 @@ def getAntonyms(word):
 
     return antonyms_common
 
+#Sample
 [getAntonyms(w) for w in nltk.word_tokenize('good')]
 
 
 #--Acquire the reverse terms based on the antonyms of each word
 #Stopwords is not reversed
-def getReverseTerms(searchTerm):
+#mode = 'short' or 'rand' => shortest word or random antonym of a word
+def getReverseTerms(searchTerm, mode='short'):
 
     searchTerm_token = nltk.word_tokenize(searchTerm)
     searchTerm_token_rs = [w if w not in stopwords.words('english') else '' for w in searchTerm_token]
@@ -33,7 +36,13 @@ def getReverseTerms(searchTerm):
     i = 0
     while i < len(searchTerm_token_rs):
         t = getAntonyms(searchTerm_token_rs[i])
-        t = random.choice(t) if t else searchTerm_token[i]
+
+        if mode == 'short':
+            t_id = np.argmin([len(tk) for tk in t]) + 1 if t else False
+            t = t[t_id - 1] if t else searchTerm_token[i]
+
+        if mode == 'rand': t = random.choice(t) if t else searchTerm_token[i]
+
         searchTerm_reverse_token.append(t)
         i += 1
 
@@ -41,7 +50,8 @@ def getReverseTerms(searchTerm):
 
     return(searchTerm_reverse)
 
-getReverseTerms('this is bad')
+#Sample
+getReverseTerms('this is girl')
 
 
 #--Main process
