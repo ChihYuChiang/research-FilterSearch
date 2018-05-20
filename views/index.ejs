@@ -9,7 +9,7 @@
   <body>
     <div class="container">
       <fieldset>
-        <form action=<%= sourcePath %> method="post">
+        <form action=<%= responseId %> method="post">
           <input name="search" type="text" class="ghost-input" placeholder="Enter your search term here" required>
           <input type="submit" class="ghost-button" value="Submit">
         </form>
@@ -18,7 +18,9 @@
       <% if(searchTerms != null){ %>
         <p class="message">
           Original search term: <b><%= searchTerms[0] %></b><br />
-          Reverse search term: <b><%= searchTerms[1] %></b>
+          <% if(searchTerms.length > 1){ %>
+            Reverse search term: <b><%= searchTerms.slice(1) %></b>
+          <% } %>
         </p>
       <% } %>
 

@@ -3,7 +3,6 @@
 Set-up
 ------------------------------------------------------------
 */
-
 //--Base
 //'underscore' provides misc utility functions
 //https://underscorejs.org/
@@ -18,6 +17,7 @@ const _ = require('underscore');
 const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
 const PORT_LISTENED = SEARCH_MODE == 'term' ? 3001 : 3000;
+const PRINT_SEARCH = false; //Print search results in console
 
 
 //--Server
@@ -69,7 +69,7 @@ Function
 ------------------------------------------------------------
 */
 //--Reverse search term
-function termProcessing(searchTerm, sourcePath) {
+function termProcessing(searchTerm, responseId) {
   return new Promise((resolve, reject) => {
     let processing = child_process.spawn('python', ['sub_termProcessing.py', searchTerm]);
     
@@ -85,7 +85,7 @@ function termProcessing(searchTerm, sourcePath) {
         message: 'Perform term processing successfully.',
         searchTerm: searchTerm,
         searchTerm_reverse: dataStream,
-        sourcePath: sourcePath
+        responseId: responseId
       });
       
       //Resolve promise
@@ -96,25 +96,26 @@ function termProcessing(searchTerm, sourcePath) {
 
 
 //--Perform search of each term in the processed term set
-function search(searchTerms, implement, res, sourcePath) {
+function search(searchTerms, implement, res, responseId) {
   //Each search as a promise; wait for all resolved
   Promise
-  .all(_.map(searchTerms, (searchTerm) => { return implement(searchTerm, sourcePath); }))
+  .all(_.map(searchTerms, (searchTerm) => { return implement(searchTerm, responseId); }))
 
   //Process result and render
   .then((result) => {
     let searchResult = {};
     searchResult.searchTerms = searchTerms;
-    searchResult.items = result[0].items.slice(0, 5).concat(result[1].items.slice(0, 5));
-    console.log(searchResult);
+    searchResult.items = resultProcessing(result);
     
-    rend(res, sourcePath, searchResult);
+    if(PRINT_SEARCH) { console.log(searchResult); }
+
+    rend(res, responseId, searchResult);
   });
 }
 
 
 //--Perform search of a single term by official Google api
-async function search_api(searchTerm, sourcePath) {
+async function search_api(searchTerm, responseId) {
   const res = await customsearch.cse.list({
     cx: config.CUSTOM_ENGINE_ID,
     auth: config.API_KEY,
@@ -126,7 +127,7 @@ async function search_api(searchTerm, sourcePath) {
     level: 'info',
     message: 'Perform api search successfully.',
     searchTerm: searchTerm,
-    sourcePath: sourcePath
+    responseId: responseId
   });
   
   //Return a promise (due to async func)
@@ -135,7 +136,7 @@ async function search_api(searchTerm, sourcePath) {
 
 
 //--Perform search of a single term by scraping
-function search_scrape(searchTerm, sourcePath) {
+function search_scrape(searchTerm, responseId) {
   return new Promise((resolve, reject) => {
     let search = child_process.spawn('python', ['sub_search.py', searchTerm]);
     
@@ -150,7 +151,7 @@ function search_scrape(searchTerm, sourcePath) {
         level: 'info',
         message: 'Perform scrape search successfully.',
         searchTerm: searchTerm,
-        sourcePath: sourcePath
+        responseId: responseId
       });
       
       //Resolve promise
@@ -160,11 +161,27 @@ function search_scrape(searchTerm, sourcePath) {
 }
 
 
+//--Process search results
+function resultProcessing(result) {
+  let resultItems = [];
+
+  switch(result.length) {
+    case 1:
+      resultItems = result[0].items.slice(0, 10);
+      break;
+    default: 
+      resultItems = result[0].items.slice(0, 5).concat(result[1].items.slice(0, 5));
+  }
+
+  return resultItems;
+}
+
+
 //--Render page with vars passed to the client
-function rend(res, sourcePath, searchResult) {
+function rend(res, responseId, searchResult) {
   res.render('index', {
     error: null,
-    sourcePath: sourcePath,
+    responseId: responseId,
     searchTerms: searchResult['searchTerms'] ? searchResult['searchTerms'] : null,
     data: searchResult['items'] ? searchResult['items'] : null
   });
@@ -185,32 +202,47 @@ function sprintf(format) {
 /*
 ------------------------------------------------------------
 Server Operation
+
+- responseId is passed from Qualtrics, unique for each respondent
 ------------------------------------------------------------
 */
 //--Get
-app.get(['/', /\/.+/], (req, res) => {
+app.get('/:responseId', (req, res) => {
   //Log
   logger.log({
     level: 'info',
     message: 'Client connected.',
     sourceIp: req.ip,
-    sourcePath: req.path
+    responseId: req.params.responseId
   });
-
+  
   //Render
-  rend(res, req.path, { searchTerms: null, searchResult: null });
+  rend(res, req.params.responseId, { searchTerms: null, searchResult: null });
 });
 
 
 //--Post
-app.post(['/', /\/.+/], (req, res) => {
+app.post('/:responseId', [post_simpleSearch, post_reverseSearch]);
+
+function post_simpleSearch(req, res, next) {
+  //If the last character in 0-9, reverse search, else simple search
+  if (req.params.responseId.match(/[0-9]$/) != null) { next(); return; }
+
+  //Acquire entered search term
+  var searchTerm = req.body.search;
+
+  //Perform plain Google search
+  search([searchTerm], SEARCH_MODE == 'scrape' ? search_scrape : search_api, res, req.params.responseId);
+}
+
+function post_reverseSearch(req, res) {
   //Acquire entered search term
   var searchTerm = req.body.search;
   var searchTerm_reverse = '';
   var searchTerms = [];
 
   //Term reversing
-  var processing = termProcessing(searchTerm, req.path);
+  var processing = termProcessing(searchTerm, req.params.responseId);
   processing.then((result) => {
     searchTerm_reverse = result;
     searchTerms = [searchTerm, searchTerm_reverse];
@@ -219,12 +251,12 @@ app.post(['/', /\/.+/], (req, res) => {
     //SEARCH_MODE == 'term' perform only term reverse and no Google search
     //SEARCH_MODE == 'scrape' or 'api' perform corresponding Google search implementation
     if(SEARCH_MODE == 'term') {
-      rend(res, req.path, { searchTerms: searchTerms, searchResult: null });
+      rend(res, req.params.responseId, { searchTerms: searchTerms, searchResult: null });
     } else {
-      search(searchTerms, SEARCH_MODE == 'scrape' ? search_scrape : search_api, res, req.path);
+      search(searchTerms, SEARCH_MODE == 'scrape' ? search_scrape : search_api, res, req.params.responseId);
     }
   });
-});
+}
 
 
 //--Start server
