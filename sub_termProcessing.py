@@ -6,6 +6,7 @@ import nltk
 from nltk.corpus import wordnet as wn
 from nltk.corpus import stopwords
 
+
 #--Acquire lemmas and antonyms of one word in WordNet structure
 def getAntonyms(word):
     
@@ -52,6 +53,26 @@ def getReverseTerms(searchTerm, mode='short'):
 
 #Sample
 getReverseTerms('this is girl')
+
+
+#--Acquire reverse terms of a file input
+def getReverseTerms_file(filePath):
+
+    processing = []
+
+    #Read each word and get antonym
+    with open(filePath) as f:
+        for line in f:
+            processing.append(', '.join([line.strip()] + getAntonyms(line.strip())))
+
+    #Write back to file
+    with open('data/out.csv', 'w+') as f:
+        for line in processing:
+            f.write(line)
+            f.write('\n')
+
+#Sample
+getReverseTerms_file('data/Keywords.csv')
 
 
 #--Main process
