@@ -17,7 +17,7 @@ const _ = require('underscore');
 const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
 const PORT_LISTENED = SEARCH_MODE == 'term' ? 3001 : 3000;
-const PRINT_SEARCH = false; //Print search results in console
+const PRINT_SEARCH = true; //Print search results in console
 
 
 //--Server
@@ -79,17 +79,20 @@ function termProcessing(searchTerm, responseId) {
       dataStream += data.toString();
     });
     processing.stdout.on('end', () => {
+      //Process the return string
+      output = dataStream.trim().split('\r\n')
+
       //Log
       logger.log({
         level: 'info',
         message: 'Perform term processing successfully.',
         searchTerm: searchTerm,
-        searchTerm_reverse: dataStream,
+        searchTerm_reverse: output,
         responseId: responseId
       });
       
       //Resolve promise
-      resolve(dataStream);
+      resolve(output);
     });
   });
 }
@@ -163,15 +166,12 @@ function search_scrape(searchTerm, responseId) {
 
 //--Process search results
 function resultProcessing(result) {
-  let resultItems = [];
+  let resultItems = result[0].items.slice(0, 5);
 
-  switch(result.length) {
-    case 1:
-      resultItems = result[0].items.slice(0, 10);
-      break;
-    default: 
-      resultItems = result[0].items.slice(0, 5).concat(result[1].items.slice(0, 5));
-  }
+  result.forEach((jli) => {
+    resultItems.concat(jli.items.slice(0, 5))
+    console.log(resultItems)
+  })
 
   return resultItems;
 }
@@ -245,7 +245,7 @@ function post_reverseSearch(req, res) {
   var processing = termProcessing(searchTerm, req.params.responseId);
   processing.then((result) => {
     searchTerm_reverse = result;
-    searchTerms = [searchTerm, searchTerm_reverse];
+    searchTerms = [searchTerm].concat(searchTerm_reverse);
 
     //Perform search and render based on SEARCH_MODE
     //SEARCH_MODE == 'term' perform only term reverse and no Google search

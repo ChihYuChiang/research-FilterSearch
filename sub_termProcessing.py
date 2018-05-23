@@ -31,28 +31,29 @@ def getAntonyms(word):
 def getReverseTerms(searchTerm, mode='short'):
 
     searchTerm_token = nltk.word_tokenize(searchTerm)
-    searchTerm_token_rs = [w if w not in stopwords.words('english') else '' for w in searchTerm_token]
-    searchTerm_reverse_token = []
+    searchTerm_reverse = []
 
-    i = 0
-    while i < len(searchTerm_token_rs):
-        t = getAntonyms(searchTerm_token_rs[i])
+    for idx, w in enumerate(searchTerm_token):
+        if w in stopwords.words('english'): continue
+
+        rw = getAntonyms(w)
+        if len(rw) == 0: continue
 
         if mode == 'short':
-            t_id = np.argmin([len(tk) for tk in t]) + 1 if t else False
-            t = t[t_id - 1] if t else searchTerm_token[i]
+            t_id = np.argmin([len(tk) for tk in rw]) + 1
+            t = rw[t_id - 1]
 
-        if mode == 'rand': t = random.choice(t) if t else searchTerm_token[i]
+        if mode == 'rand': t = random.choice(rw)
 
-        searchTerm_reverse_token.append(t)
-        i += 1
-
-    searchTerm_reverse = ' '.join(searchTerm_reverse_token)
+        searchTerm_reverse_token = searchTerm_token.copy()
+        searchTerm_reverse_token[idx] = t
+        searchTerm_reverse.append(' '.join(searchTerm_reverse_token))
 
     return(searchTerm_reverse)
 
 #Sample
 getReverseTerms('this is girl')
+getReverseTerms('caffeine is good to health')
 
 
 #--Acquire reverse terms of a file input
@@ -82,6 +83,6 @@ def main():
     searchTerm = sys.argv[1]
     searchTerm_reverse = getReverseTerms(searchTerm)
 
-    print(searchTerm_reverse)
+    for term in searchTerm_reverse: print(term)
 
 if __name__ == '__main__': main()

@@ -15,16 +15,18 @@
         </form>
       </fieldset>
 
-      <% if(searchTerms != null){ %>
+      <% if(searchTerms != null) { %>
         <p class="message">
           Original search term: <b><%= searchTerms[0] %></b><br />
-          <% if(searchTerms.length > 1){ %>
-            Reverse search term: <b><%= searchTerms.slice(1) %></b>
+          <% if(searchTerms.length > 1) { %>
+            Reverse search term: <% searchTerms.slice(1).forEach((term) => { %>
+              <b><%= term %> </b>
+            <% }) %>
           <% } %>
         </p>
       <% } %>
 
-      <% if(data != null){ %>
+      <% if(data != null) { %>
         <% for(var i = 0; i < data.length; i++) { %>
           <div class="result_entry">
             <a href=<%= data[i].link %> target="_blank"><%= data[i].title %></a>
