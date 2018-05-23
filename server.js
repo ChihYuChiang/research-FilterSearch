@@ -17,7 +17,7 @@ const _ = require('underscore');
 const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
 const PORT_LISTENED = SEARCH_MODE == 'term' ? 3001 : 3000;
-const PRINT_SEARCH = true; //Print search results in console
+const PRINT_SEARCH = false; //Print search results in console
 
 
 //--Server
@@ -166,11 +166,10 @@ function search_scrape(searchTerm, responseId) {
 
 //--Process search results
 function resultProcessing(result) {
-  let resultItems = result[0].items.slice(0, 5);
+  let resultItems = new Array();
 
   result.forEach((jli) => {
-    resultItems.concat(jli.items.slice(0, 5))
-    console.log(resultItems)
+    resultItems = resultItems.concat(jli.items.slice(0, 5));
   })
 
   return resultItems;
