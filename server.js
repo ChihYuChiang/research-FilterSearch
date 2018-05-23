@@ -177,12 +177,12 @@ function resultProcessing(result) {
 
 
 //--Render page with vars passed to the client
-function rend(res, responseId, searchResult) {
+function rend(res, responseId) {
   res.render('index', {
     error: null,
     responseId: responseId,
-    searchTerms: searchResult['searchTerms'] ? searchResult['searchTerms'] : null,
-    data: searchResult['items'] ? searchResult['items'] : null
+    searchTerms: res.locals.searchTerms ? res.locals.searchTerms : null,
+    searchResult: res.locals.searchResult ? res.locals.searchResult : null
   });
 }
 
@@ -221,40 +221,60 @@ app.get('/:responseId', (req, res) => {
 
 
 //--Post
-app.post('/:responseId', [post_simpleSearch, post_reverseSearch]);
+app.post('/:responseId', [post_surveyMode, post_termProcessing, post_reverseSearch, post_simpleSearch]);
 
-function post_simpleSearch(req, res, next) {
+function post_surveyMode(req, res, next) {
   //If the last character in 0-9, reverse search, else simple search
-  if (req.params.responseId.match(/[0-9]$/) != null) { next(); return; }
+  res.locals.survey = req.params.responseId.match(/[0-9]$/) != null ? 'reverse' : 'simple';
 
-  //Acquire entered search term
-  var searchTerm = req.body.search;
-
-  //Perform plain Google search
-  search([searchTerm], SEARCH_MODE == 'scrape' ? search_scrape : search_api, res, req.params.responseId);
+  next();
 }
 
-function post_reverseSearch(req, res) {
+function post_termProcessing(req, res, next) {
   //Acquire entered search term
   var searchTerm = req.body.search;
   var searchTerm_reverse = '';
-  var searchTerms = [];
-
+  res.locals.searchTerms = [];
+  
   //Term reversing
   var processing = termProcessing(searchTerm, req.params.responseId);
   processing.then((result) => {
     searchTerm_reverse = result;
-    searchTerms = [searchTerm].concat(searchTerm_reverse);
+    res.locals.searchTerms = [searchTerm].concat(searchTerm_reverse);
 
-    //Perform search and render based on SEARCH_MODE
-    //SEARCH_MODE == 'term' perform only term reverse and no Google search
-    //SEARCH_MODE == 'scrape' or 'api' perform corresponding Google search implementation
+    //If search mode is 'term', render, else proceed
     if(SEARCH_MODE == 'term') {
-      rend(res, req.params.responseId, { searchTerms: searchTerms, searchResult: null });
-    } else {
-      search(searchTerms, SEARCH_MODE == 'scrape' ? search_scrape : search_api, res, req.params.responseId);
-    }
+      rend(res, req.params.responseId);
+    } else { next(); }
   });
+}
+
+function post_reverseSearch(req, res, next) {
+    //The search method to use
+    var implement = SEARCH_MODE == 'scrape' ? search_scrape : search_api;
+
+    //Each search as a promise; wait for all resolved
+    Promise
+    .all(_.map(res.locals.searchTerms, (searchTerm) => { return implement(searchTerm, req.params.responseId); }))
+  
+    //Process result and render
+    .then((result) => {
+      res.locals.searchResult_original = result[0].items.slice(0, 10);
+      res.locals.searchResult = resultProcessing(result);
+      
+      //Print processed search result
+      if(PRINT_SEARCH) { console.log(res.locals.searchResult); }
+      
+      //If survey mode is 'reverse', render, else proceed
+      if(res.locals.survey == 'reverse') {
+        rend(res, req.params.responseId);
+      } else { next(); }
+    });
+}
+
+function post_simpleSearch(req, res) {
+  res.locals.searchResult = res.locals.searchResult_original;
+  rend(res, req.params.responseId);
 }
 
 
