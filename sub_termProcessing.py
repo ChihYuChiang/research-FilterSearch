@@ -1,4 +1,5 @@
 import sys
+import codecs
 import random
 import numpy as np
 from collections import Counter
@@ -9,7 +10,7 @@ from nltk.corpus import stopwords
 #Read common word list
 #Source: http://www.wordfrequency.info
 COMMON_WORDS = []
-with open('data/commonWords.txt', encoding='utf-8') as f:
+with codecs.open('data/commonWords.txt', 'r', 'UTF-8') as f:
     f.readline() #Skip the first line
 
     for line in f:
