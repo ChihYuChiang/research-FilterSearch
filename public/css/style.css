@@ -1,4 +1,4 @@
-/* Base */
+/*--Base*/
 /*
   Styles from this codepen:
   https://codepen.io/official_naveen/pen/rgknI
@@ -73,7 +73,7 @@ fieldset {
 }
 
 
-/* Toggle switch */
+/*--Toggle switch*/
 .onoffswitch {
   position: relative; width: 50px;
   -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
@@ -130,7 +130,7 @@ fieldset {
 }
 
 
-/* Customized */
+/*--Customized*/
 p {
   font-size: 15px;
   color: #4b545f;
@@ -146,7 +146,13 @@ a {
 .result-entry {
   padding: 10px 0px;
 }
-
 .hide {
   display: none;
+}
+.loading-spinner {
+  /*Center the gif*/
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50px;
 }
