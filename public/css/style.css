@@ -143,6 +143,10 @@ a {
   color: #E64A19;
   padding: 10px 0px;
 }
-.result_entry {
+.result-entry {
   padding: 10px 0px;
+}
+
+.hide {
+  display: none;
 }
