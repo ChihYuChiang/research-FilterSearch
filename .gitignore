@@ -64,3 +64,4 @@ typings/
 python_modules/
 *.json
 data/
+__pycache__/
