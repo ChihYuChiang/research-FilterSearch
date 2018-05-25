@@ -30,13 +30,13 @@ fieldset {
   padding: 30px;
 }
 .ghost-input {
-  display: block;
+  display: inline;
   font-weight:300;
-  width: 100%;
+  width: 500px;
   font-size: 25px;
   border:0px;
+  border-bottom:1px solid #ddd;
   outline: none;
-  width: 100%;
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
@@ -51,15 +51,9 @@ fieldset {
   -o-transition: all 0.1s ease-in-out;
   transition: all 0.1s ease-in-out;
 }
-.ghost-input:focus {
-  border-bottom:1px solid #ddd;
-}
 .ghost-button {
-  background-color: transparent;
-  border:2px solid #ddd;
-  padding:10px 30px;
-  width: 100%;
-  min-width: 350px;
+  display: inline;
+  vertical-align: -70%;
   -webkit-transition: all 0.1s ease-in-out;
   -moz-transition: all 0.1s ease-in-out;
   -ms-transition: all 0.1s ease-in-out;
@@ -67,66 +61,6 @@ fieldset {
   transition: all 0.1s ease-in-out;
   font-size: 15px;
   color: #4b545f;
-}
-.ghost-button:hover {
-  border:2px solid #515151;
-}
-
-
-/*--Toggle switch*/
-.onoffswitch {
-  position: relative; width: 50px;
-  -webkit-user-select:none; -moz-user-select:none; -ms-user-select: none;
-}
-
-.onoffswitch-checkbox {
-  display: none;
-}
-
-.onoffswitch-label {
-  display: block; overflow: hidden; cursor: pointer;
-  border: 2px solid #FFFFFF; border-radius: 50px;
-}
-
-.onoffswitch-inner {
-  display: block; width: 200%; margin-left: -100%;
-  transition: margin 0.3s ease-in 0s;
-}
-
-.onoffswitch-inner:before, .onoffswitch-inner:after {
-  display: block; float: left; width: 50%; height: 17px; padding: 0; line-height: 17px;
-  font-size: 25px; color: white; font-family: Trebuchet, Arial, sans-serif; font-weight: bold;
-  box-sizing: border-box;
-}
-
-.onoffswitch-inner:before {
-  content: "";
-  padding-left: 14px;
-  background-color: #34A7C1; color: #34A7C1;
-}
-
-.onoffswitch-inner:after {
-  content: "";
-  padding-right: 14px;
-  background-color: #EEEEEE; color: #999999;
-  text-align: right;
-}
-
-.onoffswitch-switch {
-  display: block; width: 25px; margin: -4px;
-  background: #FFFFFF;
-  position: absolute; top: 0; bottom: 0;
-  right: 29px;
-  border: 2px solid #FFFFFF; border-radius: 50px;
-  transition: all 0.3s ease-in 0s; 
-}
-
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-inner {
-  margin-left: 0;
-}
-
-.onoffswitch-checkbox:checked + .onoffswitch-label .onoffswitch-switch {
-  right: 0px; 
 }
 
 
@@ -155,7 +89,7 @@ a {
   color: green;
 }
 .result-snippet {
-  padding: 2px 0px;
+  padding: 1px 0px;
   margin: 0px;
   font-size: 14px;
 }
@@ -168,4 +102,7 @@ a {
   margin-left: auto;
   margin-right: auto;
   width: 50px;
+}
+.spacer {
+  padding: 20px 0px;
 }
