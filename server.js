@@ -14,8 +14,10 @@ const _ = require('underscore');
 //--Config
 //SEARCH_MODE == 'term' perform only term reverse and no Google search
 //SEARCH_MODE == 'scrape' or 'api' perform corresponding Google search implementation
+//SERVER_OS == 'linux', change command to python3, \n instead of \r\n 
 const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
+const SERVER_OS = process.argv[3] ? process.argv[3] : 'windows';
 const PORT_LISTENED = SEARCH_MODE == 'term' ? 3001 : 3000;
 const PRINT_SEARCH = false; //Print search results in console
 
@@ -70,8 +72,13 @@ Function
 */
 //--Reverse search term
 function termProcessing(searchTerm, responseId) {
+  //Adjust by os
+  const CMD = SERVER_OS == 'linux' ? 'python3' : 'python';
+  const LINE_BREAK = SERVER_OS == 'linux' ? '\n' : '\r\n';
+
+  //A promise for term processing
   return new Promise((resolve, reject) => {
-    let processing = child_process.spawn('python', ['sub_termProcessing.py', searchTerm]);
+    let processing = child_process.spawn(CMD, ['sub_termProcessing.py', searchTerm]);
     
     //Listen to stdout of the child process to receive processed result
     let dataStream = '';
@@ -80,7 +87,7 @@ function termProcessing(searchTerm, responseId) {
     });
     processing.stdout.on('end', () => {
       //Process the return string
-      output = dataStream.trim().split('\r\n')
+      output = dataStream.trim().split(LINE_BREAK)
 
       //Log
       logger.log({
