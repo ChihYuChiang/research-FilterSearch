@@ -6,10 +6,10 @@
 body {
     width: 800px;
     margin: 0 auto;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Arial', sans-serif;
 }
 .container {
-  width: 600px;
+  width: 650px;
   margin: 0 auto;
 }
 fieldset {
@@ -132,19 +132,32 @@ fieldset {
 
 /*--Customized*/
 p {
-  font-size: 15px;
+  font-size: 16px;
   color: #4b545f;
 }
 a {
-  font-size: 18px;
-  font-weight: 700;
+  padding: 5px 0px;
+  margin: 0px;
+  font-size: 19px;
+  font-weight: 500;
+  text-decoration: none;
 }
 .message {
   color: #E64A19;
-  padding: 10px 0px;
 }
 .result-entry {
-  padding: 10px 0px;
+  padding: 12px 0px;
+}
+.result-url {
+  padding: 2px 0px;
+  margin: 0px;
+  font-size: 14px;
+  color: green;
+}
+.result-snippet {
+  padding: 2px 0px;
+  margin: 0px;
+  font-size: 14px;
 }
 .hide {
   display: none;

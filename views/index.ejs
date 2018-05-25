@@ -11,24 +11,22 @@
       <fieldset>
         <form action=<%= responseId %> method="post" id="form">
           <input name="search" type="text" class="ghost-input" placeholder="Enter your search term here" required>
-          <input type="submit" class="ghost-button" value="Submit">
+          <input type="submit" class="ghost-button" id="btn-submit" value="Submit">
         </form>
       </fieldset>
 
       <% if(searchTerms != null) { %>
-        <p class="message result">
-          Original search term: <b><%= searchTerms[0] %></b><br />
+        <p class="message result">Original search term: <b><%= searchTerms[0] %></b></p>
           <% if(searchTerms.length > 1) { %>
-            Reverse search term: <b><%= searchTerms.slice(1).join(', ') %></b>
+            <p class="message result">Reverse search term: <b><%= searchTerms.slice(1).join(', ') %></b></p>
           <% } %>
-        </p>
       <% } %>
       <% if(searchResult != null) { %>
         <% for(var i = 0; i < searchResult.length; i++) { %>
           <div class="result-entry result">
-            <a href=<%= searchResult[i].link %> target="_blank"><%= searchResult[i].title %></a>
-            <p><%= searchResult[i].link %></p>
-            <p><%= searchResult[i].snippet %></p>
+            <a class="result-title" href=<%= searchResult[i].link %> target="_blank"><%= searchResult[i].title %></a>
+            <p class="result-url"><%= searchResult[i].link %></p>
+            <p class="result-snippet"><%= searchResult[i].snippet %></p>
           </div>
         <% } %>
       <% } %>
