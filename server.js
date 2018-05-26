@@ -223,7 +223,7 @@ app.get('/:responseId', (req, res) => {
   });
   
   //Render
-  rend(res, req.params.responseId, { searchTerms: null, searchResult: null });
+  rend(res, req.params.responseId);
 });
 
 
@@ -289,3 +289,24 @@ function post_simpleSearch(req, res) {
 app.listen(PORT_LISTENED, () => {
   logger.info(sprintf('Server listening on port %s..', PORT_LISTENED));
 });
+
+
+
+
+/*
+------------------------------------------------------------
+Error handler
+
+- https://expressjs.com/en/guide/error-handling.html
+------------------------------------------------------------
+*/
+app.use(errorHandler);
+
+function errorHandler (err, req, res, next) {
+  //Log error
+  logger.error(err.stack);
+
+  //Response
+  res.status(500);
+  res.send('Process  failed. Please report the failure to administrator.');
+}
