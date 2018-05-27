@@ -20,7 +20,7 @@ const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
 const SERVER_OS = process.argv[3] ? process.argv[3] : 'windows';
 const O_MULTIPLIER = process.argv[4] ? process.argv[4] : 2; //For sorting result
 const PORT_LISTENED = SEARCH_MODE == 'term' ? 3001 : 3000;
-const PRINT_SEARCH = false; //Print search results in console
+const PRINT_SEARCH = true; //Print search results in console
 
 
 //--Server
@@ -173,15 +173,17 @@ function search_scrape(searchTerm, responseId) {
 
 
 //--Process search results
-function resultProcessing(result) {
+function resultProcessing(result, responseId) {
   //Prepare output as an array
   let output = new Array();
 
   //Compute point and acquire necessary info of each item
   class ProcessedItem {
-    constructor(content, origin, oidx) {
-      this.content = content;
-      this.url = content.link;
+    constructor(item, origin, oidx) {
+      //Inherit from raw result format
+      this.title = item.title;
+      this.link = item.link;
+      this.snippet = item.snippet;
 
       //Id of the original query (0 = original search term)
       this.origin = [origin];
@@ -196,7 +198,7 @@ function resultProcessing(result) {
     existent() {
       for(var i = 0; i < output.length; i++) {
         //Return the id when first duplicate is found 
-        if(output[i].url == this.url) { return i; }
+        if(output[i].link == this.link) { return i; }
       }
 
       //If not found, return null
@@ -205,14 +207,14 @@ function resultProcessing(result) {
   }
 
   result.forEach((response, idx_r) => {
-    response.forEach((item, idx_i) => {
+    response.items.forEach((item, idx_i) => {
       processedItem = new ProcessedItem(item, idx_r, idx_i);
 
       existenceMarker = processedItem.existent();
 
       //If exists, combined with the existent item in the output
       if(existenceMarker != null) {
-        output[existenceMarker].origin.push(processedItems.origin[0]);
+        output[existenceMarker].origin.push(processedItem.origin[0]);
         output[existenceMarker].point += processedItem.point;
 
       //If is new, add as a new item in the output
@@ -222,10 +224,17 @@ function resultProcessing(result) {
 
   //Sort the output based on item points
   output.sort((a, b) => {
-    if (a.point < b.point) { return -1; }
-    if (a.point > b.point) { return 1; }
+    if (a.point < b.point) { return 1; }
+    if (a.point > b.point) { return -1; }
     return 0;
   })
+
+  //Log
+  logger.log({
+    level: 'info',
+    message: 'Perform result processing successfully.',
+    responseId: responseId
+  });
 
   //Return the first 10 items in the sorted output
   return output.slice(0, 10);
@@ -316,7 +325,7 @@ function post_reverseSearch(req, res, next) {
     //Process result and render
     .then((result) => {
       res.locals.searchResult_original = result[0].items.slice(0, 10);
-      res.locals.searchResult = resultProcessing(result);
+      res.locals.searchResult = resultProcessing(result, req.params.responseId);
       
       //Print processed search result
       if(PRINT_SEARCH) { console.log(res.locals.searchResult); }
