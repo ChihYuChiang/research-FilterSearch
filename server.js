@@ -18,6 +18,7 @@ const _ = require('underscore');
 const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
 const SERVER_OS = process.argv[3] ? process.argv[3] : 'windows';
+const O_MULTIPLIER = process.argv[4] ? process.argv[4] : 2; //For sorting result
 const PORT_LISTENED = SEARCH_MODE == 'term' ? 3001 : 3000;
 const PRINT_SEARCH = false; //Print search results in console
 
@@ -173,13 +174,61 @@ function search_scrape(searchTerm, responseId) {
 
 //--Process search results
 function resultProcessing(result) {
-  let resultItems = new Array();
+  //Prepare output as an array
+  let output = new Array();
 
-  result.forEach((jli) => {
-    resultItems = resultItems.concat(jli.items.slice(0, 5));
+  //Compute point and acquire necessary info of each item
+  class ProcessedItem {
+    constructor(content, origin, oidx) {
+      this.content = content;
+      this.url = content.link;
+
+      //Id of the original query (0 = original search term)
+      this.origin = [origin];
+
+      //Points based on its rank in the response
+      //Result from the original query is multiplied by O_MULTIPLIER
+      this.point = origin == 0 ? (O_MULTIPLIER * (10 - oidx)) : (10 - oidx);
+    }
+
+    //Check if the item is already in the output, based on the item url (link)
+    //Return: the id of the duplicate item in the output, or null if not found
+    existent() {
+      for(var i = 0; i < output.length; i++) {
+        //Return the id when first duplicate is found 
+        if(output[i].url == this.url) { return i; }
+      }
+
+      //If not found, return null
+      return null;
+    }
+  }
+
+  result.forEach((response, idx_r) => {
+    response.forEach((item, idx_i) => {
+      processedItem = new ProcessedItem(item, idx_r, idx_i);
+
+      existenceMarker = processedItem.existent();
+
+      //If exists, combined with the existent item in the output
+      if(existenceMarker != null) {
+        output[existenceMarker].origin.push(processedItems.origin[0]);
+        output[existenceMarker].point += processedItem.point;
+
+      //If is new, add as a new item in the output
+      } else { output.push(processedItem); }
+    });
+  });
+
+  //Sort the output based on item points
+  output.sort((a, b) => {
+    if (a.point < b.point) { return -1; }
+    if (a.point > b.point) { return 1; }
+    return 0;
   })
 
-  return resultItems;
+  //Return the first 10 items in the sorted output
+  return output.slice(0, 10);
 }
 
 

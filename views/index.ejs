@@ -22,9 +22,9 @@
       <% if(searchResult != null) { %>
         <% for(var i = 0; i < searchResult.length; i++) { %>
           <div class="result-entry result">
-            <a class="result-title" href=<%= searchResult[i].link %> target="_blank"><%= searchResult[i].title %></a>
-            <p class="result-url"><%= searchResult[i].link %></p>
-            <p class="result-snippet"><%= searchResult[i].snippet %></p>
+            <a class="result-title" href=<%= searchResult[i].content.link %> target="_blank"><%= searchResult[i].content.title %></a>
+            <p class="result-url"><%= searchResult[i].content.link %></p>
+            <p class="result-snippet"><%= searchResult[i].content.snippet %></p>
           </div>
         <% } %>
       <% } %>
