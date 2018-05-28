@@ -12,21 +12,26 @@ const _ = require('underscore');
 
 
 //--Config
+//Config file contain the Google API key pair
 //SEARCH_MODE == 'term' perform only term reverse and no Google search
 //SEARCH_MODE == 'scrape' or 'api' perform corresponding Google search implementation
 //SERVER_OS == 'linux', change command to python3, \n instead of \r\n 
-const config = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
+const CONFIG = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
-const SERVER_OS = process.argv[3] ? process.argv[3] : 'windows';
 const O_MULTIPLIER = process.argv[4] ? process.argv[4] : 2; //For sorting result
 const PORT_LISTENED = SEARCH_MODE == 'term' ? 3001 : 3000;
-const PRINT_SEARCH = true; //Print search results in console
+var SERVER_OS = process.argv[3] ? process.argv[3] : 'windows';
+var PRINT_SEARCH = true;
 
 
 //--Server
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+app.configure('production', () => { //Production mode
+  SERVER_OS = 'linux';
+  PRINT_SEARCH = false;
+});
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -128,8 +133,8 @@ function search(searchTerms, implement, res, responseId) {
 //--Perform search of a single term by official Google api
 async function search_api(searchTerm, responseId) {
   const res = await customsearch.cse.list({
-    cx: config.CUSTOM_ENGINE_ID,
-    auth: config.API_KEY,
+    cx: CONFIG.CUSTOM_ENGINE_ID,
+    auth: CONFIG.API_KEY,
     q: searchTerm
   });
   
@@ -344,6 +349,7 @@ function post_simpleSearch(req, res) {
 
 
 //--Start server
+//Command: NODE_ENV=production node server.js [SEARCH_MODE, [SERVER_OS, [O_MULTIPLIER]]]
 app.listen(PORT_LISTENED, () => {
   logger.info(sprintf('Server listening on port %s..', PORT_LISTENED));
 });
