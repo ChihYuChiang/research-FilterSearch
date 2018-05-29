@@ -28,13 +28,13 @@ var PRINT_SEARCH = true;
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-app.configure('production', () => { //Production mode
-  SERVER_OS = 'linux';
-  PRINT_SEARCH = false;
-});
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
+if(app.get('env') == 'production') { //Production mode
+  SERVER_OS = 'linux';
+  PRINT_SEARCH = false;
+}
 
 
 //--Google search official api
@@ -247,10 +247,10 @@ function resultProcessing(result, responseId) {
 
 
 //--Render page with vars passed to the client
-function rend(res, responseId) {
+function rend(req, res) {
   res.render('index', {
     error: null,
-    responseId: responseId,
+    responseId: req.params.responseId,
     searchTerms: res.locals.searchTerms ? res.locals.searchTerms : null,
     searchResult: res.locals.searchResult ? res.locals.searchResult : null
   });
@@ -276,7 +276,7 @@ Server Operation
 ------------------------------------------------------------
 */
 //--Get
-app.get('/:responseId', (req, res) => {
+app.get('/:responseId', (req, res, next) => {
   //Log
   logger.log({
     level: 'info',
@@ -286,8 +286,8 @@ app.get('/:responseId', (req, res) => {
   });
   
   //Render
-  rend(res, req.params.responseId);
-});
+  next();
+}, rend);
 
 
 //--Post
@@ -314,7 +314,7 @@ function post_termProcessing(req, res, next) {
 
     //If search mode is 'term', render, else proceed
     if(SEARCH_MODE == 'term') {
-      rend(res, req.params.responseId);
+      rend(req, res);
     } else { next(); }
   });
 }
@@ -337,14 +337,14 @@ function post_reverseSearch(req, res, next) {
       
       //If survey mode is 'reverse', render, else proceed
       if(res.locals.survey == 'reverse') {
-        rend(res, req.params.responseId);
+        rend(req, res);
       } else { next(); }
     });
 }
 
 function post_simpleSearch(req, res) {
   res.locals.searchResult = res.locals.searchResult_original;
-  rend(res, req.params.responseId);
+  rend(req, res);
 }
 
 
