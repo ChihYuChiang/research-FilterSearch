@@ -250,8 +250,9 @@ function rend(req, res) {
   res.render('index', {
     error: null,
     responseId: req.params.responseId,
-    searchTerms: res.locals.searchTerms ? res.locals.searchTerms : null,
-    searchResult: res.locals.searchResult ? res.locals.searchResult : null
+    surveyMode: res.locals.survey,
+    searchTerms: res.locals.searchTerms,
+    searchResult: res.locals.searchResult
   });
 }
 
@@ -290,7 +291,7 @@ app.get(['/:responseId(term)', '/:responseId(*{0,}[0-6])'], (req, res, next) => 
 
 
 //--Post
-app.post('/term', (req, res, next) => {
+app.post('/:responseId(term)', (req, res, next) => {
   res.locals.searchTerms = [req.body.search]; next();
 }, [post_termProcessing, rend]);
 
@@ -318,7 +319,7 @@ function post_surveyMode(req, res, next) {
   }
 
   //Print the root search terms
-  if(PRINT_SEARCH) { console.log('Survey mode is', res.locals.survey); }
+  if(PRINT_SEARCH) { console.log('Survey mode', res.locals.survey); }
 
   next();
 }
