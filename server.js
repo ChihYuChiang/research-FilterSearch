@@ -18,7 +18,7 @@ const _ = require('underscore');
 const CONFIG = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
 const O_MULTIPLIER = process.argv[4] ? process.argv[4] : 2; //For sorting result
-const PORT_LISTENED = SEARCH_MODE == 'term' ? 3001 : 3000;
+const PORT_LISTENED = 3000;
 var SERVER_OS = process.argv[3] ? process.argv[3] : 'windows';
 var PRINT_SEARCH = true;
 
@@ -62,8 +62,8 @@ const logger = createLogger({
     filter_favicon()
   ),
   transports: [
-    new transports.File({ filename: './log/app.log' }),
-    new transports.Console({ format: format.simple()})
+    new transports.File({ filename: './log/app.log', eol: '\r\n' }),
+    new transports.Console({ format: format.simple() })
   ]
 });
 
@@ -272,7 +272,8 @@ function sprintf(format) {
 ------------------------------------------------------------
 Server Operation
 
-- responseId is passed from Qualtrics, unique for each respondent
+- responseId is passed from Qualtrics, unique for each respondent.
+- The case scenarios bases on document in /data.
 ------------------------------------------------------------
 */
 //--Get
@@ -291,13 +292,18 @@ app.get(['/:responseId(term)', '/:responseId(*{0,}[0-6])'], (req, res, next) => 
 
 
 //--Post
+//Term reverse only
 app.post('/:responseId(term)', (req, res, next) => {
   res.locals.searchTerms = [req.body.search]; next();
 }, [post_termProcessing, rend]);
 
+//Simple search only
 app.post('/:responseId(*{0,}[0-3])', [post_surveyMode, post_search, rend]);
+
+//Reverse search
 app.post('/:responseId(*{0,}[4-6])', [post_surveyMode, post_termProcessing, post_search, rend]);
 
+//Handler functions
 function post_surveyMode(req, res, next) {
   //Survey mode based on responseId last digit
   res.locals.survey = parseInt(req.params.responseId[req.params.responseId.length - 1]);
@@ -325,10 +331,13 @@ function post_surveyMode(req, res, next) {
 }
 
 function post_termProcessing(req, res, next) {
-  //Term reversing
+  //Term reversing as promise
   var processing = termProcessing(res.locals.searchTerms[0], req.params.responseId);
+
+  //Promise fulfilled
   processing.then((searchTerm_reverse) => {
-    res.locals.searchTerms = res.locals.searchTerms.concat(searchTerm_reverse);
+    //Concat the reverse term with the root terms; if no reverse term, keep the root search term
+    res.locals.searchTerms = searchTerm_reverse == "" ? res.locals.searchTerms : res.locals.searchTerms.concat(searchTerm_reverse);
 
     next();
   })
@@ -342,7 +351,7 @@ function post_search(req, res, next) {
   Promise
   .all(_.map(res.locals.searchTerms, (searchTerm) => { return implement(searchTerm, req.params.responseId); }))
 
-  //Process result and render
+  //Process fulfilled
   .then((result) => {
 
     //Search result based on survey mode
