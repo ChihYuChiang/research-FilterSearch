@@ -13,7 +13,6 @@ const _ = require('underscore');
 
 //--Config
 //Config file contain the Google API key pair
-//SEARCH_MODE == 'term' perform only term reverse and no Google search
 //SEARCH_MODE == 'scrape' or 'api' perform corresponding Google search implementation
 //SERVER_OS == 'linux', change command to python3, \n instead of \r\n 
 const CONFIG = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
@@ -276,7 +275,7 @@ Server Operation
 ------------------------------------------------------------
 */
 //--Get
-app.get('/:responseId', (req, res, next) => {
+app.get(['/:responseId(term)', '/:responseId(*{0,}[0-6])'], (req, res, next) => {
   //Log
   logger.log({
     level: 'info',
@@ -291,60 +290,78 @@ app.get('/:responseId', (req, res, next) => {
 
 
 //--Post
-app.post('/:responseId', [post_surveyMode, post_termProcessing, post_reverseSearch, post_simpleSearch]);
+app.post('/term', (req, res, next) => {
+  res.locals.searchTerms = [req.body.search]; next();
+}, [post_termProcessing, rend]);
+
+app.post('/:responseId(*{0,}[0-3])', [post_surveyMode, post_search, rend]);
+app.post('/:responseId(*{0,}[4-6])', [post_surveyMode, post_termProcessing, post_search, rend]);
 
 function post_surveyMode(req, res, next) {
-  //If the last character in 0-9, reverse search, else simple search
-  res.locals.survey = req.params.responseId.match(/[0-9]$/) != null ? 'reverse' : 'simple';
+  //Survey mode based on responseId last digit
+  res.locals.survey = parseInt(req.params.responseId[req.params.responseId.length - 1]);
+
+  //Root search term based on survey mode
+  switch(res.locals.survey) {
+    case 0:
+      res.locals.searchTerms = [req.body.search]; break;
+    case 1: 
+      res.locals.searchTerms = ['caffeine health risks and benefits']; break;
+    case 2:
+      res.locals.searchTerms = ['caffeine health risks']; break;
+    case 3:
+      res.locals.searchTerms = ['caffeine health benefits']; break;
+    case 4:
+    case 5:
+    case 6:
+      res.locals.searchTerms = [req.body.search, 'caffeine'];
+  }
+
+  //Print the root search terms
+  if(PRINT_SEARCH) { console.log('Survey mode is', res.locals.survey); }
 
   next();
 }
 
 function post_termProcessing(req, res, next) {
-  //Acquire entered search term
-  var searchTerm = req.body.search;
-  var searchTerm_reverse = '';
-  res.locals.searchTerms = [];
-  
   //Term reversing
-  var processing = termProcessing(searchTerm, req.params.responseId);
-  processing.then((result) => {
-    searchTerm_reverse = result;
-    res.locals.searchTerms = [searchTerm].concat(searchTerm_reverse);
+  var processing = termProcessing(res.locals.searchTerms[0], req.params.responseId);
+  processing.then((searchTerm_reverse) => {
+    res.locals.searchTerms = res.locals.searchTerms.concat(searchTerm_reverse);
 
-    //If search mode is 'term', render, else proceed
-    if(SEARCH_MODE == 'term') {
-      rend(req, res);
-    } else { next(); }
+    next();
+  })
+}
+
+function post_search(req, res, next) {
+  //The search method to use
+  var implement = SEARCH_MODE == 'scrape' ? search_scrape : search_api;
+
+  //Each search as a promise; wait for all resolved
+  Promise
+  .all(_.map(res.locals.searchTerms, (searchTerm) => { return implement(searchTerm, req.params.responseId); }))
+
+  //Process result and render
+  .then((result) => {
+
+    //Search result based on survey mode
+    switch(res.locals.survey) {
+      case 5:
+        result.splice(1, 1) //Remove result from 'caffeine'
+        res.locals.searchResult = resultProcessing(result, req.params.responseId);
+        break;
+      case 6:
+        res.locals.searchResult = result[1].items.slice(0, 10);
+        break;
+      default:
+        res.locals.searchResult = result[0].items.slice(0, 10);
+    }
+    
+    //Print processed search result
+    if(PRINT_SEARCH) { console.log(res.locals.searchResult); }
+    
+    next();
   });
-}
-
-function post_reverseSearch(req, res, next) {
-    //The search method to use
-    var implement = SEARCH_MODE == 'scrape' ? search_scrape : search_api;
-
-    //Each search as a promise; wait for all resolved
-    Promise
-    .all(_.map(res.locals.searchTerms, (searchTerm) => { return implement(searchTerm, req.params.responseId); }))
-  
-    //Process result and render
-    .then((result) => {
-      res.locals.searchResult_original = result[0].items.slice(0, 10);
-      res.locals.searchResult = resultProcessing(result, req.params.responseId);
-      
-      //Print processed search result
-      if(PRINT_SEARCH) { console.log(res.locals.searchResult); }
-      
-      //If survey mode is 'reverse', render, else proceed
-      if(res.locals.survey == 'reverse') {
-        rend(req, res);
-      } else { next(); }
-    });
-}
-
-function post_simpleSearch(req, res) {
-  res.locals.searchResult = res.locals.searchResult_original;
-  rend(req, res);
 }
 
 
