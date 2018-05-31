@@ -290,6 +290,16 @@ app.get(['/:responseId(term)', '/:responseId(*{0,}[0-6])'], (req, res, next) => 
   next();
 }, rend);
 
+app.get('/:responseId(close)', (req, res) => {
+  //Log
+  logger.log({
+    level: 'info',
+    message: 'Client unloaded.',
+    sourceIp: req.ip,
+    responseId: req.params.responseId
+  });
+});
+
 
 //--Post
 //Term reverse only

@@ -18,3 +18,7 @@ function hideResult() {
     loadSpinner.classList.add("loading-spinner");
     document.body.appendChild(loadSpinner);
 }
+
+$(window).on("beforeunload", () => {
+    $.ajax({ url: '/close', type: 'GET', cache: false })
+});
