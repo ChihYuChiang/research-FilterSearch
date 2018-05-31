@@ -16,10 +16,10 @@ const _ = require('underscore');
 //SEARCH_MODE == 'scrape' or 'api' perform corresponding Google search implementation
 //SERVER_OS == 'linux', change command to python3, \n instead of \r\n 
 const CONFIG = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
-const SEARCH_MODE = process.argv[2] ? process.argv[2] : 'api';
-const O_MULTIPLIER = process.argv[4] ? process.argv[4] : 2; //For sorting result
+const O_MULTIPLIER = process.argv[1] ? process.argv[1] : 1.25; //For sorting result
+const SEARCH_MODE = 'api';
 const PORT_LISTENED = 3000;
-var SERVER_OS = process.argv[3] ? process.argv[3] : 'windows';
+var SERVER_OS = 'windows';
 var PRINT_SEARCH = true;
 
 
