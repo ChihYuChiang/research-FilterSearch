@@ -16,10 +16,12 @@ const _ = require('underscore');
 //SEARCH_MODE == 'scrape' or 'api' perform corresponding Google search implementation
 //SERVER_OS == 'linux', change command to python3, \n instead of \r\n 
 const CONFIG = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
-const O_MULTIPLIER = process.argv[1] ? process.argv[1] : 1.25; //For sorting result
+const O_MULTIPLIER = process.argv[2] ? process.argv[2] : 1.25; //For sorting result
 const SEARCH_MODE = 'api';
 const PORT_LISTENED = 3000;
 var SERVER_OS = 'windows';
+var CMD = 'python';
+var LINE_BREAK = '\r\n'
 var PRINT_SEARCH = true;
 
 
@@ -32,6 +34,8 @@ app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 if(app.get('env') == 'production') { //Production mode
   SERVER_OS = 'linux';
+  CMD = 'python3'
+  LINE_BREAK = '\n'
   PRINT_SEARCH = false;
 }
 
@@ -62,7 +66,7 @@ const logger = createLogger({
     filter_favicon()
   ),
   transports: [
-    new transports.File({ filename: './log/app.log', eol: '\r\n' }),
+    new transports.File({ filename: './log/app.log', eol: LINE_BREAK }),
     new transports.Console({ format: format.simple() })
   ]
 });
@@ -77,10 +81,6 @@ Function
 */
 //--Reverse search term
 function termProcessing(searchTerm, responseId) {
-  //Adjust by os
-  const CMD = SERVER_OS == 'linux' ? 'python3' : 'python';
-  const LINE_BREAK = SERVER_OS == 'linux' ? '\n' : '\r\n';
-
   //A promise for term processing
   return new Promise((resolve, reject) => {
     let processing = child_process.spawn(CMD, ['sub_termProcessing.py', searchTerm]);
@@ -106,25 +106,6 @@ function termProcessing(searchTerm, responseId) {
       //Resolve promise
       resolve(output);
     });
-  });
-}
-
-
-//--Perform search of each term in the processed term set
-function search(searchTerms, implement, res, responseId) {
-  //Each search as a promise; wait for all resolved
-  Promise
-  .all(_.map(searchTerms, (searchTerm) => { return implement(searchTerm, responseId); }))
-
-  //Process result and render
-  .then((result) => {
-    let searchResult = {};
-    searchResult.searchTerms = searchTerms;
-    searchResult.items = resultProcessing(result);
-    
-    if(PRINT_SEARCH) { console.log(searchResult); }
-
-    rend(res, responseId, searchResult);
   });
 }
 
@@ -333,7 +314,7 @@ function post_surveyMode(req, res, next) {
     case 4:
     case 5:
     case 6:
-      res.locals.searchTerms = [req.body.search, 'caffeine'];
+      res.locals.searchTerms = [req.body.search, 'caffeine health risks and benefits'];
   }
 
   //Print the root search terms
@@ -369,7 +350,7 @@ function post_search(req, res, next) {
     //Search result based on survey mode
     switch(res.locals.survey) {
       case 5:
-        result.splice(1, 1) //Remove result from 'caffeine'
+        result.splice(1, 1) //Remove result from the preset one
         res.locals.searchResult = resultProcessing(result, req.params.responseId);
         break;
       case 6:
