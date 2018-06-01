@@ -19,6 +19,8 @@ function hideResult() {
     document.body.appendChild(loadSpinner);
 }
 
+
+//--Send window unload event
 $(window).on("beforeunload", () => {
-    $.ajax({ url: '/close', type: 'GET', cache: false })
+    $.ajax({ url: $("#form").attr("action") + "/unload", type: "GET", cache: false })
 });

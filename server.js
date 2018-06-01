@@ -277,6 +277,7 @@ Server Operation
 ------------------------------------------------------------
 */
 //--Get
+//Main page
 app.get(['/:responseId(term)', '/:responseId(*{0,}[0-6])'], (req, res, next) => {
   //Log
   logger.log({
@@ -290,15 +291,16 @@ app.get(['/:responseId(term)', '/:responseId(*{0,}[0-6])'], (req, res, next) => 
   next();
 }, rend);
 
-app.get('/:responseId(close)', (req, res) => {
-  //Log
+//Record unload event
+app.get('/:responseId/unload', (req, res) => {
   logger.log({
     level: 'info',
     message: 'Client unloaded.',
-    sourceIp: req.ip,
     responseId: req.params.responseId
   });
 });
+
+//Record mouse click event
 
 
 //--Post
