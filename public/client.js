@@ -8,7 +8,7 @@ function hideResult() {
 
     //Hide result
     var result = document.getElementsByClassName("result");
-    for (var i = 0; i < result.length; i++) {
+    for(var i = 0; i < result.length; i++) {
         result[i].classList.add("hide");
     }
 
@@ -21,6 +21,30 @@ function hideResult() {
 
 
 //--Send window unload event
+//'/:responseId/unload'
 $(window).on("beforeunload", () => {
-    $.ajax({ url: $("#form").attr("action") + "/unload", type: "GET", cache: false })
+    $.ajax({ url: "/unload/" + $("#responseId").attr("value"), type: "GET", cache: false })
 });
+
+
+//--Restrict mouse right click
+//So the mouse click tracker works better
+$(document).ready(() => {
+    $("*").on("contextmenu", () => { return false; });
+});
+
+
+//--Send link clicked event
+//'link-clicked/:responseId/:idx'
+var result = document.getElementsByClassName("result-title");
+for(var i = 0; i < result.length; i++) {
+    result[i].onclick = function() {
+        var origin = this.childNodes[3].getAttribute("value") == "/" ? "so" : this.childNodes[3].getAttribute("value");
+        var url = "/link-clicked/" + $("#responseId").attr("value") + "/" + this.childNodes[1].getAttribute("value") + "/" + origin;
+        console.log(url);
+        $.ajax({
+            url: url,
+            type: "GET", cache: false
+        });
+    }
+}

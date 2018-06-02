@@ -2,29 +2,33 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Neutral Search</title>
+    <title>Avtiropos</title>
     <link rel="stylesheet" type="text/css" href="/css/style.css">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:300' rel='stylesheet' type='text/css'>
   </head>
   <body>
     <div class="container">
       <fieldset>
-        <form action=<%= responseId %> method="post" id="form">
+        <form action=<%= '/search/' + responseId %> method="post" id="form">
           <input name="search" type="text" class="ghost-input" placeholder="Enter your search term here" required>
-          <input type="image" class="ghost-button" id="btn-submit" src="image/magnifier.png" value="Submit">
+          <input type="image" class="ghost-button" id="btn-submit" src="/image/magnifier.png" value="Submit">
         </form>
+        <param id="responseId" value=<%= responseId %> />
       </fieldset>
 
-      <% if(typeof searchTerms !== 'undefined' && typeof surveyMode === 'undefined') { %>
-        <p class="message result">Original search term: <b><%= searchTerms[0] %></b></p>
-        <p class="message result">Reverse search term: <b><%= searchTerms.slice(1).join(', ') %></b></p>
+      <% if(searchTerms && typeof surveyMode === 'undefined') { %>
+        <div class="result">
+          <p class="message">Original search term: <b><%= searchTerms[0] %></b></p>
+          <p class="message">Reverse search term: <b><%= searchTerms.slice(1).join(', ') %></b></p>
+        </div>
       <% } %>
-      <% if(typeof searchResult !== 'undefined') { %>
+      <% if(searchResult) { %>
         <% for(var i = 0; i < searchResult.length; i++) { %>
           <div class="result-entry result">
             <a class="result-title" href=<%= searchResult[i].link %> target="_blank">
               <%= searchResult[i].title %>
-              <param name="result-origin" value=<%= searchResult[i].origin %> />
+              <param class="result-idx" value=<%= i %> />
+              <param class="result-origin" value=<%= searchResult[i].origin %> />
             </a>
             <p class="result-url"><%= searchResult[i].link %></p>
             <p class="result-snippet"><%= searchResult[i].snippet %></p>
@@ -34,7 +38,7 @@
     </div>
 
     <p class="spacer"></p>
-    <script src="jquery-3.3.1.min.js"></script>
+    <script src="/jquery-3.3.1.min.js"></script>
     <script src="/client.js"></script> 
   </body>
 </html>

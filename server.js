@@ -60,6 +60,7 @@ const filter_favicon = format((info, opts) => {
 
 //Logger contents and outputs
 const logger = createLogger({
+  level: 'verbose',
   format: format.combine(
     format.timestamp(),
     format.json(),
@@ -259,7 +260,7 @@ Server Operation
 */
 //--Get
 //Main page
-app.get(['/:responseId(term)', '/:responseId(*{0,}[0-6])'], (req, res, next) => {
+app.get(['/search/:responseId(term)', '/search/:responseId(*{0,}[0-6])'], (req, res, next) => {
   //Log
   logger.log({
     level: 'info',
@@ -273,28 +274,37 @@ app.get(['/:responseId(term)', '/:responseId(*{0,}[0-6])'], (req, res, next) => 
 }, rend);
 
 //Record unload event
-app.get('/:responseId/unload', (req, res) => {
+app.get('/unload/:responseId', (req, res) => {
   logger.log({
-    level: 'info',
-    message: 'Client unloaded.',
+    level: 'verbose',
+    message: 'Client performed search or unloaded.',
     responseId: req.params.responseId
   });
 });
 
 //Record mouse click event
+app.get('/link-clicked/:responseId/:idx/:origin', (req, res) => {
+  logger.log({
+    level: 'verbose',
+    message: 'User clicked link.',
+    responseId: req.params.responseId,
+    idx: req.params.idx,
+    origin: req.params.origin
+  });
+});
 
 
 //--Post
 //Term reverse only
-app.post('/:responseId(term)', (req, res, next) => {
+app.post('/search/:responseId(term)', (req, res, next) => {
   res.locals.searchTerms = [req.body.search]; next();
 }, [post_termProcessing, rend]);
 
 //Simple search only
-app.post('/:responseId(*{0,}[0-3])', [post_surveyMode, post_search, rend]);
+app.post('/search/:responseId(*{0,}[0-3])', [post_surveyMode, post_search, rend]);
 
 //Reverse search
-app.post('/:responseId(*{0,}[4-6])', [post_surveyMode, post_termProcessing, post_search, rend]);
+app.post('/search/:responseId(*{0,}[4-6])', [post_surveyMode, post_termProcessing, post_search, rend]);
 
 //Handler functions
 function post_surveyMode(req, res, next) {
