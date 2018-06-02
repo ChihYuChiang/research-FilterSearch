@@ -67,7 +67,8 @@ const logger = createLogger({
     filter_favicon()
   ),
   transports: [
-    new transports.File({ filename: './log/app.log', eol: LINE_BREAK }),
+    //Break line with \r\n to make visually available in windows
+    new transports.File({ filename: './log/app.log', eol: '\r\n' }),
     new transports.Console({ format: format.simple() })
   ]
 });
