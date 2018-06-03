@@ -18,10 +18,10 @@ const _ = require('underscore');
 const CONFIG = JSON.parse(fs.readFileSync(__dirname + '/config.json'));
 const O_MULTIPLIER = process.argv[2] ? process.argv[2] : 1.25; //For sorting result
 const SEARCH_MODE = 'api';
-const PORT_LISTENED = 3000;
 var SERVER_OS = 'windows';
 var CMD = 'python';
-var LINE_BREAK = '\r\n'
+var PORT_LISTENED = 3000;
+var LINE_BREAK = '\r\n';
 var PRINT_SEARCH = true;
 
 
@@ -34,8 +34,9 @@ app.use(express.static('public'));
 app.use(bodyParser.urlencoded({ extended: true }));
 if(app.get('env') == 'production') { //Production mode
   SERVER_OS = 'linux';
-  CMD = 'python3'
-  LINE_BREAK = '\n'
+  CMD = 'python3';
+  PORT_LISTENED = 80;
+  LINE_BREAK = '\n';
   PRINT_SEARCH = false;
 }
 

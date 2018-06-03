@@ -42,9 +42,6 @@ for(var i = 0; i < result.length; i++) {
         var origin = this.childNodes[3].getAttribute("value") == "/" ? "so" : this.childNodes[3].getAttribute("value");
         var url = "/link-clicked/" + $("#responseId").attr("value") + "/" + this.childNodes[1].getAttribute("value") + "/" + origin;
         console.log(url);
-        $.ajax({
-            url: url,
-            type: "GET", cache: false
-        });
+        $.ajax({ url: url, type: "GET", cache: false });
     }
 }
