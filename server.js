@@ -99,7 +99,7 @@ function termProcessing(searchTerm, responseId) {
 
       //Log
       logger.log({
-        level: 'info',
+        level: 'verbose',
         message: 'Perform term processing successfully.',
         searchTerm: searchTerm,
         searchTerm_reverse: output,
@@ -123,7 +123,7 @@ async function search_api(searchTerm, responseId) {
   
   //Log
   logger.log({
-    level: 'info',
+    level: 'verbose',
     message: 'Perform api search successfully.',
     searchTerm: searchTerm,
     responseId: responseId
@@ -147,7 +147,7 @@ function search_scrape(searchTerm, responseId) {
     search.stdout.on('end', () => {
       //Log
       logger.log({
-        level: 'info',
+        level: 'verbose',
         message: 'Perform scrape search successfully.',
         searchTerm: searchTerm,
         responseId: responseId
@@ -219,7 +219,7 @@ function resultProcessing(result, responseId) {
 
   //Log
   logger.log({
-    level: 'info',
+    level: 'verbose',
     message: 'Perform result processing successfully.',
     responseId: responseId
   });
@@ -278,8 +278,8 @@ app.get(['/search/:responseId(term)', '/search/:responseId(*{0,}[0-6])'], (req, 
 //Record unload event
 app.get('/unload/:responseId', (req, res) => {
   logger.log({
-    level: 'verbose',
-    message: 'Client performed search or unloaded.',
+    level: 'info',
+    message: 'Client unloaded.',
     responseId: req.params.responseId
   });
 });
@@ -287,7 +287,7 @@ app.get('/unload/:responseId', (req, res) => {
 //Record mouse click event
 app.get('/link-clicked/:responseId/:idx/:origin', (req, res) => {
   logger.log({
-    level: 'verbose',
+    level: 'info',
     message: 'User clicked link.',
     responseId: req.params.responseId,
     idx: req.params.idx,
@@ -310,6 +310,14 @@ app.post('/search/:responseId(*{0,}[4-6])', [post_surveyMode, post_termProcessin
 
 //Handler functions
 function post_surveyMode(req, res, next) {
+  //Record the typed-in search term
+  logger.log({
+    level: 'info',
+    message: 'Client performed search.',
+    responseId: req.params.responseId,
+    typedInTerm: req.body.search
+  });
+
   //Survey mode based on responseId last digit
   res.locals.survey = parseInt(req.params.responseId[req.params.responseId.length - 1]);
 
@@ -383,7 +391,7 @@ function post_search(req, res, next) {
 //--Start server
 //Command: NODE_ENV=production node server.js [SEARCH_MODE, [SERVER_OS, [O_MULTIPLIER]]]
 app.listen(PORT_LISTENED, () => {
-  logger.info(sprintf('Server listening on port %s..', PORT_LISTENED));
+  logger.verbose(sprintf('Server listening on port %s..', PORT_LISTENED));
 });
 
 
